@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Relative Rotation Graph</title>
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #chart { max-width: 900px; height: 600px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+<script type="text/babel">
+function App(){
+  const [tickers, setTickers] = React.useState('AAPL,MSFT,GOOGL');
+  const [tail, setTail] = React.useState(30);
+  const [data, setData] = React.useState(null);
+  const fetchData = async () => {
+    const resp = await fetch(`http://localhost:8000/rrg?tickers=${tickers}&tail=${tail}`);
+    const json = await resp.json();
+    setData(json);
+  };
+  React.useEffect(()=>{fetchData();},[]);
+  React.useEffect(()=>{
+    if(!data) return;
+    const ctx = document.getElementById('chart').getContext('2d');
+    const datasets = Object.entries(data.points).map(([ticker,points])=>({
+      label: ticker,
+      data: points.map(p=>({x:p.x,y:p.y})),
+      fill:false,
+      showLine:true,
+      borderColor:`hsl(${Math.random()*360},70%,50%)`
+    }));
+    if(window.myChart){window.myChart.destroy();}
+    window.myChart = new Chart(ctx, {
+      type:'scatter',
+      data:{datasets},
+      options:{
+        parsing:false,
+        plugins:{
+          legend:{position:'bottom'},
+          zoom:{zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'xy'}}
+        },
+        scales:{x:{title:{display:true,text:'RS-Ratio'}},y:{title:{display:true,text:'RS-Momentum'}}}
+      }
+    });
+  },[data]);
+  return (
+    <div>
+      <div>
+        <label>Tickers: <input value={tickers} onChange={e=>setTickers(e.target.value)} /></label>
+        <label>Tail: <input type="number" value={tail} onChange={e=>setTail(+e.target.value)} /></label>
+        <button onClick={fetchData}>Draw</button>
+      </div>
+      <canvas id="chart"></canvas>
+    </div>
+  );
+}
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
