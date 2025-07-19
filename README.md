@@ -33,6 +33,15 @@ The endpoint returns JSON suitable for the front‑end.
 ## Front‑end
 
 `frontend/index.html` is a small React page that fetches RRG data and
-displays it using Chart.js. Open the file in a browser while the API is
-running.
+displays it using Chart.js. Because it expects the API at `http://localhost:8000`,
+run a simple HTTP server from the `frontend` directory and open the page
+through that server:
+
+```bash
+cd frontend
+python3 -m http.server 8080
+```
+
+Then browse to <http://localhost:8080/index.html> while the FastAPI
+service is running.
 

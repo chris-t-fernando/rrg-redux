@@ -21,7 +21,7 @@ function App(){
   const [tail, setTail] = React.useState(30);
   const [data, setData] = React.useState(null);
   const fetchData = async () => {
-    const resp = await fetch(`/rrg?tickers=${tickers}&tail=${tail}`);
+    const resp = await fetch(`http://localhost:8000/rrg?tickers=${tickers}&tail=${tail}`);
     const json = await resp.json();
     setData(json);
   };

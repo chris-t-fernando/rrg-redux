@@ -1,10 +1,19 @@
 from typing import List
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import psycopg2
 import pandas as pd
 
 app = FastAPI()
+
+# allow requests from the demo page
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def get_db_config(env: str) -> dict:
