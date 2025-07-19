@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import psycopg2
@@ -58,6 +58,8 @@ def fetch_prices(conn, tickers: List[str], interval: str, days: int) -> pd.DataF
 
 def compute_rrg(df: pd.DataFrame, tickers: List[str], benchmark: str, tail: int):
     pivot = df.pivot(index="ts", columns="ticker", values="close").sort_index()
+    if benchmark not in pivot:
+        raise KeyError(f"benchmark '{benchmark}' not found")
     benchmark_series = pivot[benchmark]
     rrg = {}
     for t in tickers:
@@ -94,7 +96,10 @@ def rrg(
         df = fetch_prices(conn, all_symbols, interval, tail * 10)
     finally:
         conn.close()
-    data = compute_rrg(df, symbols, benchmark, tail)
+    try:
+        data = compute_rrg(df, symbols, benchmark, tail)
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"benchmark": benchmark, "points": data}
 
 

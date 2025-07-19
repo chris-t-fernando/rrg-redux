@@ -30,6 +30,20 @@ uvicorn backend.app:app --reload
 
 The endpoint returns JSON suitable for the front‑end.
 
+### Populating data from yfinance
+
+If your database does not yet contain prices, you can fetch them from
+[yfinance](https://pypi.org/project/yfinance/). The ticker symbol for the
+S&P 500 ETF is `SPY`. A helper script is provided to load daily (`1d`)
+prices into the table:
+
+```bash
+python backend/load_yfinance.py SPY,AAPL,MSFT --interval 1d --env devtest
+```
+
+This downloads roughly two years of daily data and upserts it into the
+`stock_ohlcv` table so that the RRG endpoint can operate.
+
 ## Front‑end
 
 `frontend/index.html` is a small React page that fetches RRG data and
